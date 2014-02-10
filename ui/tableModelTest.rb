@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'Qt'
-require 'yaml'
+require './idd.rb'
 
 #monkey-patch String
 class String
@@ -73,6 +73,7 @@ class DataModel
     obj = objs[col]
     return nil if (obj.empty? || row >= obj.size )
     obj[row] = value
+    return nil
   end
   
 end
@@ -87,12 +88,10 @@ class ViewModel < Qt::AbstractTableModel
 #  end
   
   def rowCount( parent = Qt::ModelIndex.new )
-    #return @table.size
     return @data.row_count
   end
   
   def columnCount( parent = Qt::ModelIndex.new )
-    #return @table[0].size()
     return @data.column_count
   end
   
@@ -101,7 +100,6 @@ class ViewModel < Qt::AbstractTableModel
     return Qt::Variant.new if index.row >= rowCount
     return Qt::Variant.new if index.column >= columnCount
     return Qt::Variant.new if (role != Qt::DisplayRole) && (role != Qt::EditRole)
-    #return Qt::Variant.new( @table[index.row][index.column] )
     return Qt::Variant.new( @data.get_data(index.row,index.column) )
   end
   
@@ -112,7 +110,14 @@ class ViewModel < Qt::AbstractTableModel
   
   def setData( index, value, role = Qt::EditRole )
     if (index.isValid && role == Qt::EditRole)
-      #@table[index.row][index.column] = value
+      case value.type
+      when Qt::MetaType::Double
+        value = value.toDouble
+      when Qt::MetaType::Bool
+        value = value.toBool
+      else
+        value = value.toString
+      end
       @data.set_data(index.row,index.column,value)
       dataChanged(index,index)
       return true
@@ -200,9 +205,9 @@ end
       obj_hash[name] = Array.new if !obj_hash.has_key?(name)
       params = params.drop(1)
       params.map! do |param|
-        if param.is_integer?
-          param.to_i
-        elsif param.is_float?
+        #if param.is_integer?
+          #param.to_f
+        if param.is_float?
           param.to_f
         else
           param
@@ -224,7 +229,7 @@ end
 
 
 app = Qt::Application.new(ARGV)
-idd = YAML.load(File.read('Energy+.idd.yml'))
+idd = IDD.new.idd
 idf = parse_idf('700ppm.idf')
 data = DataModel.new(idd, idf)
 data.set_class('SizingPeriod:DesignDay')
@@ -237,4 +242,5 @@ d.set_choicer( c )
 v.setItemDelegate( d )
 v.setModel(vm)
 v.show
+v.resize(800, 900)
 app.exec

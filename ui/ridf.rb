@@ -4,6 +4,7 @@ require 'Qt'
 require './ridf_ui.rb'
 require 'yaml'
 require 'pp'
+require './idd.rb'
 
 class Test < Qt::MainWindow
 
@@ -45,7 +46,7 @@ class Test < Qt::MainWindow
   
   def populate_class_tree
     @class_tree_items = []
-    @idd = YAML.load(File.read('Energy+.idd.yml'))
+    @idd = IDD.new.idd#YAML.load(File.read('Energy+.idd.yml'))
     @idd.each do |group,objs|
       strs = []
       strs.push(group)
