@@ -1,13 +1,11 @@
 =begin
 ** Form generated from reading ui file 'ridf.ui'
 **
-** Created: Thu Jan 30 13:17:02 2014
+** Created: Tue Feb 11 00:10:46 2014
 **      by: Qt User Interface Compiler version 4.8.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 =end
-
-require 'Qt4'
 
 class Ui_MainWindow
     attr_reader :centralwidget
@@ -33,7 +31,7 @@ class Ui_MainWindow
     attr_reader :toolButton_2
     attr_reader :toolButton
     attr_reader :horizontalSpacer_3
-    attr_reader :tableWidget
+    attr_reader :tableView
     attr_reader :menubar
     attr_reader :statusbar
 
@@ -141,10 +139,10 @@ class Ui_MainWindow
 
     @verticalLayout_3.addLayout(@horizontalLayout_2)
 
-    @tableWidget = Qt::TableWidget.new(@verticalLayoutWidget_3)
-    @tableWidget.objectName = "tableWidget"
+    @tableView = Qt::TableView.new(@verticalLayoutWidget_3)
+    @tableView.objectName = "tableView"
 
-    @verticalLayout_3.addWidget(@tableWidget)
+    @verticalLayout_3.addWidget(@tableView)
 
     @splitter_2.addWidget(@verticalLayoutWidget_3)
     @splitter_3.addWidget(@splitter_2)
@@ -190,11 +188,3 @@ module Ui
     end
 end  # module Ui
 
-if $0 == __FILE__
-    a = Qt::Application.new(ARGV)
-    u = Ui_MainWindow.new
-    w = Qt::MainWindow.new
-    u.setupUi(w)
-    w.show
-    a.exec
-end
