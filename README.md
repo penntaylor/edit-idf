@@ -1,6 +1,14 @@
 edit-idf
 ========
 
+WARNING:
+--------
+This code is in no shape to be cloned yet. Most of what's here is 
+proof-of-concept and prototyping that I'm using to help work out the 
+specifications and eventual interfaces (in both the api sense and the gui 
+sense). Everything is in Ruby right now, but I haven't decided whether this
+project will stick with Ruby beyond the prototyping stage.
+
 Summary
 -------
 edit-idf provides a way to edit EnergyPlus IDF files, somewhat like the 
