@@ -35,7 +35,8 @@ class DataModel
 # @dict hold the data dictionary from which we can get allowed values, types,
 # number of rows, headers, etc.
 
-  def initialize( idd_hash, data )
+  def initialize( idd, data )
+    idd_hash = idd.clone
     @data = data
     @dict = {}
     # Remove the "group" layer from the hash, leaving just a collection of
@@ -81,11 +82,6 @@ end
 
 
 class ViewModel < Qt::AbstractTableModel
-
-#  def initialize
-#    super
-#    #@table = [[1,2.6,3],[4,5,6],[7,8,9],[10,11,12],["one","two","three"],[true,false,true]]
-#  end
   
   def rowCount( parent = Qt::ModelIndex.new )
     return @data.row_count
@@ -128,6 +124,7 @@ class ViewModel < Qt::AbstractTableModel
   def set_data_model( model )
     @data = model
   end
+
   
 end
 
@@ -171,7 +168,10 @@ class ComboDelegate < Qt::ItemDelegate
 end
 
 
-# Strip out all comments from the input
+class IdfParser
+
+  protected
+  # Strip out all comments from the input
   def strip_comments(ary)
     ary.each do |line|
       comment = line.index('!-')
@@ -179,23 +179,26 @@ end
       line.strip!
     end
   end
-  
-# Remove all blank lines
+
+  protected
+  # Remove all blank lines
   def remove_blank_lines(ary)
     ary.delete_if do |line|
       line.empty?
     end
   end
-  
-# Join all lines and then split on semicolons, which represent
-# object boundaries
+
+  protected
+  # Join all lines and then split on semicolons, which represent
+  # object boundaries
   def form_object_lines(ary)  
     oneline = ary.join
     return oneline.split(';')
   end
-  
-# Split each object on commas and fill out the names and 
-# all_parameters arrays
+
+  protected
+  # Split each object on commas and fill out the names and 
+  # all_parameters arrays
   def split_objects(ary)
     obj_hash = {}
     ary.each do |line|
@@ -218,29 +221,31 @@ end
     return obj_hash
   end
 
-def parse_idf( fname )
-  input = File.readlines(fname)
-  strip_comments(input)
-  remove_blank_lines(input)
-  lines = form_object_lines(input)
-  return split_objects(lines)
+  public
+  def parse_idf( fname )
+    input = File.readlines(fname)
+    strip_comments(input)
+    remove_blank_lines(input)
+    lines = form_object_lines(input)
+    return split_objects(lines)
+  end
+
 end
 
 
-
-app = Qt::Application.new(ARGV)
-idd = IDD.new.idd
-idf = parse_idf('700ppm.idf')
-data = DataModel.new(idd, idf)
-data.set_class('SizingPeriod:DesignDay')
-vm = ViewModel.new
-vm.set_data_model( data )
-v = Qt::TableView.new
-c = Choicer.new
-d = ComboDelegate.new
-d.set_choicer( c )
-v.setItemDelegate( d )
-v.setModel(vm)
-v.show
-v.resize(800, 900)
-app.exec
+#~app = Qt::Application.new(ARGV)
+#~idd = IDD.new.idd
+#~idf = parse_idf('700ppm.idf')
+#~data = DataModel.new(idd, idf)
+#~data.set_class('SizingPeriod:DesignDay')
+#~vm = ViewModel.new
+#~vm.set_data_model( data )
+#~v = Qt::TableView.new
+#~c = Choicer.new
+#~d = ComboDelegate.new
+#~d.set_choicer( c )
+#~v.setItemDelegate( d )
+#~v.setModel(vm)
+#~v.show
+#~v.resize(800, 900)
+#~app.exec
