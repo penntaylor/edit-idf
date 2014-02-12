@@ -5,11 +5,12 @@ require './ridf_ui.rb'
 require 'yaml'
 require 'pp'
 require './idd.rb'
+require './tableModelTest.rb'
 
 class Test < Qt::MainWindow
 
   slots 'class_tree_item_selected(QTreeWidgetItem*,QTreeWidgetItem*)'
-  slots 'obj_table_cell_clicked(int,int)'
+  slots 'obj_table_cell_clicked(QModelIndex)'
   slots 'header_clicked(int)'
   slots 'expand(bool)'
   slots 'sort(bool)'
@@ -22,11 +23,11 @@ class Test < Qt::MainWindow
             SIGNAL('currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)'),
             self,
             SLOT('class_tree_item_selected(QTreeWidgetItem*,QTreeWidgetItem*)'))
-    connect(@ui.tableWidget,
-            SIGNAL('cellClicked(int,int)'),
+    connect(@ui.tableView,
+            SIGNAL('clicked(QModelIndex)'),
             self,
-            SLOT('obj_table_cell_clicked(int,int)'))
-    connect(@ui.tableWidget.verticalHeader,
+            SLOT('obj_table_cell_clicked(QModelIndex)'))
+    connect(@ui.tableView.verticalHeader,
             SIGNAL('sectionClicked(int)'),
             self,
             SLOT('header_clicked(int)'))
@@ -40,13 +41,24 @@ class Test < Qt::MainWindow
             SLOT('sort(bool)'))
     @ui.class_tree.setHeaderHidden(true)
     populate_class_tree
-    read_input_file(ARGV[0])
+    @idf = IdfParser.new.parse_idf('700ppm.idf')
+    @data = DataModel.new(@idd, @idf)
+    @data.set_class('SizingPeriod:DesignDay')
+    @vm = ViewModel.new
+    @vm.set_data_model( @data )
+    #~c = Choicer.new
+    #~d = ComboDelegate.new
+    #~d.set_choicer( c )
+    #~v.setItemDelegate( d )
+    @ui.tableView.setModel(@vm)
+
+    #read_input_file(ARGV[0])
     self.show
   end
   
   def populate_class_tree
     @class_tree_items = []
-    @idd = IDD.new.idd#YAML.load(File.read('Energy+.idd.yml'))
+    @idd = IDD.new.idd
     @idd.each do |group,objs|
       strs = []
       strs.push(group)
@@ -63,32 +75,32 @@ class Test < Qt::MainWindow
   def class_tree_item_selected(curr,prev)
     parent = curr.parent
     if parent
-      @ui.tableWidget.verticalHeader.reset
+      @ui.tableView.verticalHeader.reset
       obj = @idd[parent.text(0)][curr.text(0)]
       @ui.object_description.setText(obj['__self__']['memo'].join)
       tmp = obj.reject{|k| k=='__self__'}
+      @data.set_class(curr.text(0))
       #@ui.object_structure.setText(tmp.to_yaml)
-      @ui.tableWidget.setRowCount(tmp.size)
-      tmp.each_with_index do |field,idx|
-        itemText = field.first
-        itemText += field.last.has_key?('units') ? " (#{field.last['units']})" : ''
-        newItem = Qt::TableWidgetItem.new(itemText)  
-        @ui.tableWidget.setVerticalHeaderItem(idx,newItem)
-        #@ui.tableWidget.setItem(idx, 0, newItem)
-      end
-      @ui.tableWidget.verticalHeader().setResizeMode(Qt::HeaderView::ResizeToContents)
-      @ui.tableWidget.verticalHeader().setResizeMode(Qt::HeaderView::Interactive)
+      #~@ui.tableWidget.setRowCount(tmp.size)
+      #~tmp.each_with_index do |field,idx|
+        #~itemText = field.first
+        #~itemText += field.last.has_key?('units') ? " (#{field.last['units']})" : ''
+        #~newItem = Qt::TableWidgetItem.new(itemText)  
+        #~@ui.tableWidget.setVerticalHeaderItem(idx,newItem)
+      #~end
+      #~@ui.tableWidget.verticalHeader().setResizeMode(Qt::HeaderView::ResizeToContents)
+      #~@ui.tableWidget.verticalHeader().setResizeMode(Qt::HeaderView::Interactive)
     else
       # Clear out whatever should go away
     end
   end
   
-  def obj_table_cell_clicked(row,col)
-    header_clicked(row)
+  def obj_table_cell_clicked(modelIndex)
+    header_clicked(modelIndex.row)
   end
   
   def header_clicked(idx)
-    field_name = @ui.tableWidget.verticalHeaderItem(idx).text
+    field_name = @ui.tableView.verticalHeaderItem(idx).text
     field_name.sub!(/\s\(.+\)$/,'')
     puts field_name
     tree_sel = @ui.class_tree.current_item
