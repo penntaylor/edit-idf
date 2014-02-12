@@ -5,9 +5,9 @@ require './ridf_ui.rb'
 require 'yaml'
 require 'pp'
 require './idd.rb'
-require './tableModelTest.rb'
+require './idf_data_model.rb'
 
-class Test < Qt::MainWindow
+class EditorUI < Qt::MainWindow
 
   slots 'class_tree_item_selected(QTreeWidgetItem*,QTreeWidgetItem*)'
   slots 'obj_table_cell_clicked(QModelIndex)'
@@ -147,5 +147,5 @@ class Test < Qt::MainWindow
 end
 
 app = Qt::Application.new(ARGV)
-Test.new
+EditorUI.new
 app.exec
