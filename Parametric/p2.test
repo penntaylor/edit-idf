@@ -1,0 +1,14 @@
+Parametric:SetValueForRun,
+    $A,
+    A1,
+    A2,
+    A3;
+    
+Parametric:SetValueForRun,
+  $B,
+  B1,
+  B2,
+  B3;
+  
+  Parametric:SetValueForRun,
+  $C, C1, C2;

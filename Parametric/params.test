@@ -1,0 +1,38 @@
+!-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
+!-      Use '!' comments if they need to be retained when using the IDFEditor.
+
+!-   =========== PARAMETRIC SETUP ===========
+Parametric:SetValueForRun,
+    $WindowOperableLowGain,
+    Alpen 725L Casement,
+    Thermotech 322 Netshade Casement,
+    Fibertec Operable Low Gain,
+    Inline Low Gain;
+    
+Parametric:SetValueForRun,
+    $WindowFixedLowGain,
+    Alpen 725L Fixed Picture HP,
+    Thermotech 322 Netshade Fixed,
+    Fibertec Fixed Low Gain,
+    Inline Low Gain;
+    
+Parametric:SetValueForRun,
+    $WindowOperableHighGain,
+    Alpen 725H Casement,
+    Thermotech 322 Netgain Casement,
+    Fibertec Operable High Gain,
+    Inline High Gain;
+    
+Parametric:SetValueForRun,
+    $WindowFixedHighGain,
+    Alpen 725H Fixed Picture HP,
+    Thermotech 322 Netgain Fixed,
+    Fibertec Fixed High Gain,
+    Inline High Gain;
+    
+Parametric:FileNameSuffix,
+    Parametric,
+    Alpen,
+    Thermotech,
+    Fibertec,
+    Inline;
