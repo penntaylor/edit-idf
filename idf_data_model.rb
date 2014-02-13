@@ -34,16 +34,16 @@ class DataModel
 # is set via set_class. Column refers to obj1, obj2, obj3, etc. and row
 # refers to each value within an object: obj1_1, obj1_2, etc.
 #
-# @dict hold the data dictionary from which we can get allowed values, types,
+# @idd hold the data dictionary from which we can get allowed values, types,
 # number of rows, headers, etc.
 
   def initialize( idd, data )
     idd_hash = idd.clone
     @data = data
-    @dict = {}
+    @idd = {}
     # Remove the "group" layer from the hash, leaving just a collection of
     # objects.
-    idd_hash.each_key {|key| @dict.merge!(idd_hash.delete(key)) }
+    idd_hash.each_key {|key| @idd.merge!(idd_hash.delete(key)) }
     @class = ''
     @v_headers = []
   end
@@ -52,7 +52,7 @@ class DataModel
     @class = clas
     # Form the row headers for this class
     @v_headers.clear
-    fields = @dict[@class].reject{|key| key=='__self__'}
+    fields = @idd[@class].reject{|key| key=='__self__'}
     fields.each do |field|
       header_text = field.first
       header_text += field.last.has_key?('units') ? " (#{field.last['units']})" : ''
@@ -62,10 +62,10 @@ class DataModel
   
   def row_count
     return 0 if @class.empty?
-    return 0 if !@dict.has_key?(@class)
+    return 0 if !@idd.has_key?(@class)
     # subtract 1 to take the __self__ "row" into account. It's always at the
     # end of each class's hash, so it will never be queried.
-    return @dict[@class].size - 1
+    return @idd[@class].size - 1
   end
   
   def column_count
