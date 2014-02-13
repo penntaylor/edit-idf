@@ -41,7 +41,7 @@ class EditorUI < Qt::MainWindow
             SLOT('sort(bool)'))
     @ui.class_tree.setHeaderHidden(true)
     populate_class_tree
-    @idf = IdfParser.new.parse_idf('700ppm.idf')
+    @idf = IdfParser.new(@idd).parse_idf('700ppm.idf')
     @data = DataModel.new(@idd, @idf)
     @vm = ViewModel.new
     @vm.set_data_model( @data )

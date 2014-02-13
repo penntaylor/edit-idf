@@ -55,7 +55,8 @@ class DataModel
     fields = @idd[@class].reject{|key| key=='__self__'}
     fields.each do |field|
       header_text = field.first
-      header_text += field.last.has_key?('units') ? " (#{field.last['units']})" : ''
+      header_text += field.last.has_key?('units') ?
+                     " (#{field.last['units']})" : ''
       @v_headers.push(header_text)
     end
   end
@@ -99,6 +100,13 @@ class DataModel
     return @v_headers[section] if orientation == Qt::Vertical && role == Qt::DisplayRole
     return nil
   end
+
+  def get_default(row)
+    return nil if @class.empty?
+    defv = @idd[@class].values[row].has_key?('default') ?
+           @idd[@class].values[row]['default'] : 'NONE'
+    return defv
+  end
   
 end
 
@@ -118,6 +126,7 @@ class ViewModel < Qt::AbstractTableModel
     return Qt::Variant.new if !index.isValid
     return Qt::Variant.new if index.row >= rowCount
     return Qt::Variant.new if index.column >= columnCount
+    return Qt::Variant.new( "Default: #{@data.get_default(index.row)}" ) if role == Qt::ToolTipRole
     return Qt::Variant.new if (role != Qt::DisplayRole) && (role != Qt::EditRole)
     return Qt::Variant.new( @data.get_data(index.row,index.column) )
   end
@@ -136,6 +145,8 @@ class ViewModel < Qt::AbstractTableModel
       case value.type
       when Qt::MetaType::Double
         value = value.toDouble
+      when Qt::MetaType::Int
+        value = value.toInt
       when Qt::MetaType::Bool
         value = value.toBool
       else
@@ -204,11 +215,19 @@ end
 
 class IdfParser
 
+  def initialize(idd)
+    idd_hash = idd.clone
+    @idd = {}
+    # Remove the "group" layer from the hash, leaving just a collection of
+    # objects.
+    idd_hash.each_key {|key| @idd.merge!(idd_hash.delete(key)) }
+  end
+
   protected
   # Strip out all comments from the input
   def strip_comments(ary)
     ary.each do |line|
-      comment = line.index('!-')
+      comment = line.index('!')
       line.slice!(comment,line.length) if comment
       line.strip!
     end
@@ -237,17 +256,20 @@ class IdfParser
     obj_hash = {}
     ary.each do |line|
       params = line.split(',')
-      params.each {|p| p.strip!} #Ensure padding whitespace is removed from each entry
+      params.each {|p| p.strip!}
       name = params[0]
       obj_hash[name] = Array.new if !obj_hash.has_key?(name)
       params = params.drop(1)
-      params.map! do |param|
-        #if param.is_integer?
-          #param.to_f
-        if param.is_float?
-          param.to_f
+      params.map!.with_index do |param,idx|
+        field = @idd[name].values[idx]
+        if field['vartype'] == 'N'
+          if field.has_key?('type') && field['type'] == 'integer'
+            param.to_i
+          else
+            param.to_f
+          end
         else
-          param
+         param
         end
       end
       obj_hash[name].push(params)
