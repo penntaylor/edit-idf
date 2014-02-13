@@ -51,6 +51,7 @@ class DataModel
   def set_class( clas )
     @class = clas
     # Form the row headers for this class
+    @v_headers.clear
     fields = @dict[@class].reject{|key| key=='__self__'}
     fields.each do |field|
       header_text = field.first
@@ -122,7 +123,6 @@ class ViewModel < Qt::AbstractTableModel
   end
 
   def headerData (section, orientation, role = Qt::DisplayRole)
-    puts "hd: #{section}"
     return Qt::Variant.new(@data.get_header(section, orientation, role))
   end
   
@@ -153,12 +153,10 @@ class ViewModel < Qt::AbstractTableModel
   end
 
   def beginResetModel
-    headerDataChanged(Qt::Vertical,0,100)
     super
   end
 
   def endResetModel
-    headerDataChanged(Qt::Vertical,0,100)
     super
   end
   
