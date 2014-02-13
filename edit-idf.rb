@@ -43,7 +43,6 @@ class EditorUI < Qt::MainWindow
     populate_class_tree
     @idf = IdfParser.new.parse_idf('700ppm.idf')
     @data = DataModel.new(@idd, @idf)
-    #@data.set_class('SizingPeriod:DesignDay')
     @vm = ViewModel.new
     @vm.set_data_model( @data )
     #~c = Choicer.new
@@ -92,6 +91,7 @@ class EditorUI < Qt::MainWindow
       #~end
       @ui.tableView.verticalHeader().setResizeMode(Qt::HeaderView::ResizeToContents)
       @ui.tableView.verticalHeader().setResizeMode(Qt::HeaderView::Interactive)
+      @ui.tableView.resizeColumnsToContents()
     else
       # Clear out whatever should go away
     end
@@ -102,9 +102,8 @@ class EditorUI < Qt::MainWindow
   end
   
   def header_clicked(idx)
-    field_name = @ui.tableView.verticalHeaderItem(idx).text
+    field_name = @vm.headerData(idx,Qt::Vertical,Qt::DisplayRole).toString
     field_name.sub!(/\s\(.+\)$/,'')
-    puts field_name
     tree_sel = @ui.class_tree.current_item
     group_name = tree_sel.parent.text(0)
     obj_name = tree_sel.text(0)
