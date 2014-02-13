@@ -44,23 +44,37 @@ class DataModel
     # Remove the "group" layer from the hash, leaving just a collection of
     # objects.
     idd_hash.each_key {|key| @dict.merge!(idd_hash.delete(key)) }
+    @class = ''
+    @v_headers = []
   end
 
   def set_class( clas )
     @class = clas
+    # Form the row headers for this class
+    fields = @dict[@class].reject{|key| key=='__self__'}
+    fields.each do |field|
+      header_text = field.first
+      header_text += field.last.has_key?('units') ? " (#{field.last['units']})" : ''
+      @v_headers.push(header_text)
+    end
   end
   
   def row_count
+    return 0 if @class.empty?
+    return 0 if !@dict.has_key?(@class)
     # subtract 1 to take the __self__ "row" into account. It's always at the
     # end of each class's hash, so it will never be queried.
     return @dict[@class].size - 1
   end
   
   def column_count
+    return 0 if @class.empty?
+    return 0 if !@data.has_key?(@class)
     return @data[@class].size
   end
   
   def get_data( row, col )
+    return nil if @class.empty?
     objs = @data[@class]
     return nil if (!objs || objs.empty?)
     return nil if col >= objs.size
@@ -70,12 +84,18 @@ class DataModel
   end
   
   def set_data( row, col, value )
+    return nil if @class.empty?
     objs = @data[@class]
     return nil if (!objs || objs.empty?)
     return nil if col >= objs.size
     obj = objs[col]
     return nil if (obj.empty? || row >= obj.size )
     obj[row] = value
+    return nil
+  end
+
+  def get_header(section, orientation, role)
+    return @v_headers[section] if orientation == Qt::Vertical && role == Qt::DisplayRole
     return nil
   end
   
@@ -99,6 +119,11 @@ class ViewModel < Qt::AbstractTableModel
     return Qt::Variant.new if index.column >= columnCount
     return Qt::Variant.new if (role != Qt::DisplayRole) && (role != Qt::EditRole)
     return Qt::Variant.new( @data.get_data(index.row,index.column) )
+  end
+
+  def headerData (section, orientation, role = Qt::DisplayRole)
+    puts "hd: #{section}"
+    return Qt::Variant.new(@data.get_header(section, orientation, role))
   end
   
   def flags( index )
@@ -127,6 +152,15 @@ class ViewModel < Qt::AbstractTableModel
     @data = model
   end
 
+  def beginResetModel
+    headerDataChanged(Qt::Vertical,0,100)
+    super
+  end
+
+  def endResetModel
+    headerDataChanged(Qt::Vertical,0,100)
+    super
+  end
   
 end
 

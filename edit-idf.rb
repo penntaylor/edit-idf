@@ -43,7 +43,7 @@ class EditorUI < Qt::MainWindow
     populate_class_tree
     @idf = IdfParser.new.parse_idf('700ppm.idf')
     @data = DataModel.new(@idd, @idf)
-    @data.set_class('SizingPeriod:DesignDay')
+    #@data.set_class('SizingPeriod:DesignDay')
     @vm = ViewModel.new
     @vm.set_data_model( @data )
     #~c = Choicer.new
@@ -75,11 +75,13 @@ class EditorUI < Qt::MainWindow
   def class_tree_item_selected(curr,prev)
     parent = curr.parent
     if parent
-      @ui.tableView.verticalHeader.reset
+      #@ui.tableView.verticalHeader.reset
       obj = @idd[parent.text(0)][curr.text(0)]
       @ui.object_description.setText(obj['__self__']['memo'].join)
-      tmp = obj.reject{|k| k=='__self__'}
+      #~tmp = obj.reject{|k| k=='__self__'}
+      @vm.beginResetModel
       @data.set_class(curr.text(0))
+      @vm.endResetModel
       #@ui.object_structure.setText(tmp.to_yaml)
       #~@ui.tableWidget.setRowCount(tmp.size)
       #~tmp.each_with_index do |field,idx|
@@ -88,8 +90,8 @@ class EditorUI < Qt::MainWindow
         #~newItem = Qt::TableWidgetItem.new(itemText)  
         #~@ui.tableWidget.setVerticalHeaderItem(idx,newItem)
       #~end
-      #~@ui.tableWidget.verticalHeader().setResizeMode(Qt::HeaderView::ResizeToContents)
-      #~@ui.tableWidget.verticalHeader().setResizeMode(Qt::HeaderView::Interactive)
+      @ui.tableView.verticalHeader().setResizeMode(Qt::HeaderView::ResizeToContents)
+      @ui.tableView.verticalHeader().setResizeMode(Qt::HeaderView::Interactive)
     else
       # Clear out whatever should go away
     end
